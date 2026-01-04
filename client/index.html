@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detoxify</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap");
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --accent: #6fb5a6;
+      --accent-2: #7fb7f0;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+    body.dark {
+      --bg: #0f172a;
+      --panel: #111827;
+      --accent: #7fb7f0;
+      --accent-2: #6fb5a6;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --border: #1f2937;
+      background: radial-gradient(circle at 20% 20%, rgba(111,181,166,0.12), transparent 30%),
+                  radial-gradient(circle at 80% 10%, rgba(127,183,240,0.1), transparent 26%),
+                  radial-gradient(circle at 40% 70%, rgba(111,181,166,0.1), transparent 30%),
+                  var(--bg);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Manrope", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(111,181,166,0.14), transparent 32%),
+                  radial-gradient(circle at 80% 10%, rgba(127,183,240,0.12), transparent 28%),
+                  radial-gradient(circle at 40% 70%, rgba(111,181,166,0.12), transparent 32%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      padding: 20px 28px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: linear-gradient(90deg, rgba(245,247,251,0.9), rgba(238,242,247,0.9));
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: 0.1px; color: var(--text); }
+    .brand-name { font-size: 18px; background: linear-gradient(120deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; color: transparent; }
+    .logo { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: grid; place-items: center; box-shadow: 0 10px 30px rgba(111,181,166,0.25); }
+    .logo svg { width: 22px; height: 22px; }
+    nav { display: flex; gap: 10px; justify-content: center; background: rgba(255,255,255,0.5); border-radius: 14px; padding: 6px; border: 1px solid var(--border); }
+    body.dark nav { background: rgba(15,23,42,0.55); border-color: #1f2937; }
+    .nav-btn { padding: 10px 16px; border-radius: 10px; border: 1px solid transparent; background: transparent; cursor: pointer; font-weight: 700; color: var(--text); transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+    .nav-btn.active { background: linear-gradient(120deg, var(--accent), var(--accent-2)); color: #0f172a; border-color: rgba(0,0,0,0.05); box-shadow: 0 6px 16px rgba(111,181,166,0.35); }
+    body.dark .nav-btn { color: #dbeafe; }
+    body.dark .nav-btn.active { color: #0b1224; border-color: rgba(0,0,0,0.3); }
+    .pill { padding: 6px 12px; border-radius: 999px; background: linear-gradient(120deg, var(--accent), var(--accent-2)); color: #0f172a; font-weight: 700; font-size: 14px; box-shadow: 0 10px 24px rgba(111,181,166,0.2); }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px 64px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; align-items: start; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 18px 40px rgba(15,23,42,0.06); }
+    body.dark .card { background: #0f172a; border-color: #1f2937; box-shadow: 0 18px 40px rgba(0,0,0,0.35); }
+    h1, h2, h3, h4 { margin: 0 0 12px; letter-spacing: -0.2px; }
+    .muted { color: var(--muted); }
+    label { display: block; margin: 8px 0 4px; font-size: 14px; color: var(--muted); }
+    input, button, select, textarea { width: 100%; padding: 12px 12px; border-radius: 12px; border: 1px solid var(--border); background: #f9fafb; color: var(--text); font-size: 15px; font-family: inherit; }
+    body.dark input, body.dark select, body.dark textarea { background: #0b1626; border-color: #1f2d3f; color: #e5e7eb; }
+    input:focus, button:focus, textarea:focus { outline: 2px solid var(--accent); }
+    .error { border-color: #f87171 !important; box-shadow: 0 0 0 1px rgba(248,113,113,0.4); }
+    .locked-card { border-color: var(--accent); background: #eef7f4; box-shadow: 0 10px 30px rgba(111,181,166,0.18); }
+    button { cursor: pointer; font-weight: 700; letter-spacing: 0.3px; transition: transform 0.1s ease, box-shadow 0.1s ease; background: linear-gradient(120deg, var(--accent), var(--accent-2)); color: #0f172a; border: none; box-shadow: 0 8px 18px rgba(111,181,166,0.25); }
+    button:hover { transform: translateY(-1px); }
+    .flex { display: flex; gap: 12px; align-items: center; }
+    .hero { margin: 24px 0 20px; padding: 18px 18px; border-radius: 18px; background: linear-gradient(135deg, rgba(111,181,166,0.14), rgba(127,183,240,0.14)); border: 1px solid var(--border); }
+    body.dark .hero { background: linear-gradient(135deg, rgba(127,183,240,0.16), rgba(111,181,166,0.16)); border-color: #1f2937; }
+    .auth-wrap { max-width: 400px; margin: 40px auto; }
+    .tab-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .ghost { background: #eef2f7; color: var(--text); border: 1px solid var(--border); }
+    body.dark .ghost { background: #0b1626; border-color: #1f2d3f; color: #dbeafe; }
+    .status { margin-top: 8px; font-size: 14px; color: var(--muted); min-height: 20px; }
+    .chart-box { width: 100%; min-height: 200px; }
+    .chart-box svg { width: 100%; height: 220px; }
+    .chart-label { font-size: 11px; fill: var(--muted); }
+    .chart-line { fill: none; stroke-width: 2; }
+    .chart-area { opacity: 0.18; }
+    .chart-empty { display: none; text-align: center; color: var(--muted); padding: 24px 0; font-weight: 600; letter-spacing: 0.1px; }
+    .streak-badge { font-size: 18px; font-weight: 700; }
+    @media (max-width: 720px) {
+      header { grid-template-columns: 1fr; gap: 10px; }
+      nav { justify-content: stretch; flex-wrap: wrap; }
+      .nav-btn { flex: 1 1 100%; text-align: center; }
+      .container { padding: 16px 14px 48px; }
+      .card { padding: 14px; }
+      .hero { padding: 12px; }
+      h1 { font-size: 22px; line-height: 1.2; }
+      label, input, button { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 13c3-1 6-3 8-7 2 4 3 6 6 7-1 4-5 7-8 7s-5-3-6-7Z" />
+          <path d="M12 12c.5 1.5 1.5 3 3 4" />
+        </svg>
+      </div>
+      <span class="brand-name">Detoxify</span>
+    </div>
+    <nav>
+      <button class="nav-btn active" id="navHome">Domov</button>
+      <button class="nav-btn" id="navProgress">Progress</button>
+      <button class="nav-btn" id="navAbout">O projekte</button>
+    </nav>
+    <div class="flex" id="userInfo" style="display:none;">
+      <div class="pill" id="streakPill">🔥 0 dní</div>
+      <button class="ghost" style="width:auto;" id="logoutBtn">Odhlásiť</button>
+      <button class="ghost" style="width:auto;" id="themeToggle">🌙/☀️</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero" id="hero">
+      <h1 id="heroTitle">Malé kroky, pokojnejšia myseľ.</h1>
+    </section>
+
+    <section class="auth-wrap card" id="authSection">
+      <div class="tab-row">
+        <button id="showLogin" class="ghost">Prihlásenie</button>
+        <button id="showRegister" class="ghost">Registrácia</button>
+      </div>
+      <form id="loginForm">
+        <label>Email</label>
+        <input type="email" name="email" required />
+        <label>Heslo</label>
+        <input type="password" name="password" required minlength="6" />
+        <button type="submit" style="margin-top:12px;">Prihlásiť</button>
+      </form>
+      <form id="registerForm" style="display:none;">
+        <label>Email</label>
+        <input type="email" name="email" required />
+        <label>Heslo (min 6 znakov)</label>
+        <input type="password" name="password" required minlength="6" />
+        <button type="submit" style="margin-top:12px;">Vytvoriť účet</button>
+      </form>
+      <div class="status" id="authStatus"></div>
+    </section>
+
+    <section id="onboardingSection" class="card" style="display:none;">
+      <h3>Rýchly úvodný dotazník</h3>
+      <p class="muted">Zodpovedz tieto otázky pri prvej návšteve. Po uložení sa dostaneš na domovskú stránku.</p>
+      <form id="onboardingForm">
+        <label>Priemerný čas na mobile minulý týždeň (hodiny)</label>
+        <input type="number" step="0.1" name="weekAvgMobileHours" min="0" placeholder="napr. 3" />
+        <label>Koľko si spal dnes (hodiny)</label>
+        <input type="number" step="0.1" name="sleepHours" min="0" max="24" placeholder="7.5" />
+        <label>Nálada počas dňa (1-10)</label>
+        <input type="number" name="mood" min="1" max="10" />
+        <label>Aké to bolo po zobudení (1-10)</label>
+        <input type="number" name="wakeFeeling" min="1" max="10" />
+        <label>Čas na mobile dnes (hodiny)</label>
+        <input type="number" step="0.1" name="mobileHours" min="0" placeholder="2" />
+        <button type="submit" style="margin-top:12px;">Uložiť a pokračovať</button>
+      </form>
+      <div class="status" id="onboardingStatus"></div>
+      <div id="onboardingTips" class="card" style="margin-top:12px; display:none; background:rgba(255,255,255,0.6);">
+        <h4>Tipy na začiatok</h4>
+        <ul class="muted" style="padding-left:20px; margin:0;">
+          <li>Vypni nepotrebné notifikácie na sociálnych sieťach.</li>
+          <li>Vyhraď si pevné okno na sociálne siete (napr. 30 min večer).</li>
+          <li>Telefón nechaj mimo spálne pred spaním.</li>
+        </ul>
+        <button id="tipsDone" class="ghost" style="margin-top:10px; width:auto;">OK, jasné</button>
+      </div>
+    </section>
+
+    <section id="app" style="display:none;">
+      <div id="homeView">
+        <div class="grid">
+          <div class="card" id="dailyCard">
+            <h3 style="display:flex; align-items:center; gap:8px;">
+              <span>Dnešné otázky</span>
+              <span id="dailyBadge" class="pill" style="display:none; padding:4px 10px; font-size:12px;">Hotovo</span>
+            </h3>
+            <p class="muted">Zadaj čísla, ulož a sleduj streak.</p>
+            <form id="dailyForm">
+              <div id="weeklyBlock">
+                <label>Priemerný čas na mobile minulý týždeň (hodiny)</label>
+                <input type="number" step="0.1" name="weekAvgMobileMinutes" min="0" placeholder="napr. 3" />
+              </div>
+              <label>Koľko si spal dnes (hodiny)</label>
+              <input type="number" step="0.1" name="sleepHours" min="0" max="24" placeholder="7.5" />
+              <label>Nálada počas dňa (1-10)</label>
+              <input type="number" name="mood" min="1" max="10" />
+              <label>Aké to bolo po zobudení (1-10)</label>
+              <input type="number" name="wakeFeeling" min="1" max="10" />
+              <label>Čas na mobile dnes (hodiny)</label>
+              <input type="number" step="0.1" name="mobileHours" min="0" placeholder="2" />
+              <label>Poznámka k dňu (voliteľné)</label>
+              <textarea name="notes" rows="3"></textarea>
+              <button type="submit" style="margin-top:12px;">Uložiť deň</button>
+            </form>
+            <div class="status" id="saveStatus"></div>
+          </div>
+          <div class="card">
+            <h3>Streak</h3>
+            <p class="muted">Každý deň s vyplneným záznamom pridáva +1.</p>
+            <div class="streak-badge" id="streakText">0 dní</div>
+            <div class="muted" id="lastEntry">Posledný zápis: -</div>
+            <div id="goalStatus" class="muted" style="margin-top:6px;"></div>
+          </div>
+          <div class="card">
+            <h3>Ciele</h3>
+            <p class="muted">Nastav si denný a týždenný limit času na mobile (hodiny).</p>
+            <form id="goalsForm">
+              <label>Denný cieľ (h)</label>
+              <input type="number" step="0.1" name="dailyGoalHours" min="0" placeholder="napr. 2" />
+              <label>Týždenný cieľ (h)</label>
+              <input type="number" step="0.1" name="weeklyGoalHours" min="0" placeholder="napr. 12" />
+              <button type="submit" style="margin-top:10px;">Uložiť ciele</button>
+            </form>
+            <div class="status" id="goalMsg"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="progressView" style="display:none;">
+        <div class="grid">
+          <div class="card">
+            <h3>Hodiny na mobile (deň)</h3>
+            <div id="chartDaily" class="chart-box"></div>
+            <div id="emptyDaily" class="chart-empty">Pridaj aspoň dva dni, aby graf ukázal trend.</div>
+          </div>
+          <div class="card">
+            <h3>Hodiny na mobile (týždeň)</h3>
+            <div id="chartWeekly" class="chart-box"></div>
+            <div id="emptyWeekly" class="chart-empty">Potrebujeme viac týždňov na graf.</div>
+          </div>
+          <div class="card">
+            <h3>Denná nálada</h3>
+            <div id="chartMood" class="chart-box"></div>
+            <div id="emptyMood" class="chart-empty">Pridaj aspoň dva dni s náladou.</div>
+          </div>
+          <div class="card">
+            <h3>Hodiny spánku</h3>
+            <div id="chartSleep" class="chart-box"></div>
+            <div id="emptySleep" class="chart-empty">Pridaj spánok za aspoň dva dni.</div>
+          </div>
+          <div class="card">
+            <h3>Nálada po zobudení</h3>
+            <div id="chartWake" class="chart-box"></div>
+            <div id="emptyWake" class="chart-empty">Pridaj aspoň dva dni s hodnotením rána.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="aboutView" style="display:none;">
+        <div class="grid">
+          <div class="card" style="grid-column: span 2;">
+            <h3>O projekte</h3>
+            <p class="muted">
+              Detoxify ti pomáha znížiť nadmerný čas na mobile a priniesť viac pokoja do dňa. Základom je uvedomelý záznam času, spánku a nálady.
+            </p>
+            <h4>Prečo sociálne siete lákajú?</h4>
+            <p>
+              Sociálne siete využívajú systém odmien v mozgu. Pri každom novom poste, lajku či notifikácii dostane mozog malú dávku dopamínu – hormónu, ktorý
+              zvyšuje motiváciu opakovať dané správanie. Čím častejšie scrollujeme, tým viac očakávame ďalší „hit“ a ťažšie sa odpojujeme.
+            </p>
+            <h4>Čo robí nadmerné scrollovanie</h4>
+            <ul>
+              <li>Rozbíja sústredenie – krátke dávky dopamínu znižujú trpezlivosť a zhoršujú hlbokú prácu.</li>
+              <li>Skresľuje náladu – porovnávanie s „dokonalými“ feedmi môže znižovať sebahodnotu a zvyšovať úzkosť.</li>
+              <li>Oberá o spánok – nočné scrollovanie posúva cirkadiánny rytmus a znižuje kvalitu spánku.</li>
+              <li>Vyprázdňuje čas – drobné pauzy sa poskladajú do hodín denne, ktoré chýbajú na pohyb, vzťahy alebo odpočinok.</li>
+            </ul>
+            <h4>Ako pomáha Detoxify</h4>
+            <ul>
+              <li>Denné záznamy: vidíš reálne čísla, nie domnienky.</li>
+              <li>Streak: buduješ návyk konzistentnosti.</li>
+              <li>Grafy: sleduješ trendy času na mobile, spánku a nálady.</li>
+              <li>Motivácia: krátke slogany pripomínajú, prečo sa oplatí zostať offline.</li>
+            </ul>
+            <p class="muted">
+              Tip: nastav si vlastné „okná“ používania sociálnych sietí a po 30 minútach urob krátku pauzu. Dôležité je malé, ale každodenné zlepšenie.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const api = (path, opts = {}) =>
+      fetch(path, { credentials: "include", headers: { "Content-Type": "application/json" }, ...opts }).then((r) => {
+        if (!r.ok) throw r;
+        return r.json();
+      });
+
+    const authSection = document.getElementById("authSection");
+    const app = document.getElementById("app");
+    const userInfo = document.getElementById("userInfo");
+    const authStatus = document.getElementById("authStatus");
+    const saveStatus = document.getElementById("saveStatus");
+    const onboardingStatus = document.getElementById("onboardingStatus");
+    const streakPill = document.getElementById("streakPill");
+    const streakText = document.getElementById("streakText");
+    const lastEntry = document.getElementById("lastEntry");
+    const navHome = document.getElementById("navHome");
+    const navProgress = document.getElementById("navProgress");
+    const navAbout = document.getElementById("navAbout");
+    const homeView = document.getElementById("homeView");
+    const progressView = document.getElementById("progressView");
+    const aboutView = document.getElementById("aboutView");
+    const chartEmptyElems = {
+      daily: document.getElementById("emptyDaily"),
+      weekly: document.getElementById("emptyWeekly"),
+      mood: document.getElementById("emptyMood"),
+      sleep: document.getElementById("emptySleep"),
+      wake: document.getElementById("emptyWake"),
+    };
+    const chartCanvases = {
+      daily: document.getElementById("chartDaily"),
+      weekly: document.getElementById("chartWeekly"),
+      mood: document.getElementById("chartMood"),
+      sleep: document.getElementById("chartSleep"),
+      wake: document.getElementById("chartWake"),
+    };
+    const dailyCard = document.getElementById("dailyCard");
+    const dailyBadge = document.getElementById("dailyBadge");
+    const weeklyBlock = document.getElementById("weeklyBlock");
+    const goalStatus = document.getElementById("goalStatus");
+    const goalMsg = document.getElementById("goalMsg");
+    const themeToggle = document.getElementById("themeToggle");
+    const heroTitle = document.getElementById("heroTitle");
+    const tipsBlock = document.getElementById("onboardingTips");
+    const tipsDone = document.getElementById("tipsDone");
+
+    let userMeta = {};
+    let dailyLocked = false;
+    let entriesCache = [];
+    let goals = { daily: null, weekly: null };
+
+    document.getElementById("showLogin").onclick = () => {
+      document.getElementById("loginForm").style.display = "block";
+      document.getElementById("registerForm").style.display = "none";
+      authStatus.textContent = "";
+    };
+    document.getElementById("showRegister").onclick = () => {
+      document.getElementById("loginForm").style.display = "none";
+      document.getElementById("registerForm").style.display = "block";
+      authStatus.textContent = "";
+    };
+
+    navHome.onclick = () => switchView("home");
+    navProgress.onclick = () => switchView("progress");
+    navAbout.onclick = () => switchView("about");
+    themeToggle.onclick = () => {
+      const isDark = document.body.classList.toggle("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+    };
+    tipsDone.onclick = () => {
+      tipsBlock.style.display = "none";
+      localStorage.setItem("tipsSeen", "1");
+    };
+
+    function switchView(view) {
+      homeView.style.display = view === "home" ? "block" : "none";
+      progressView.style.display = view === "progress" ? "block" : "none";
+      aboutView.style.display = view === "about" ? "block" : "none";
+      navHome.classList.toggle("active", view === "home");
+      navProgress.classList.toggle("active", view === "progress");
+      navAbout.classList.toggle("active", view === "about");
+      if (view === "progress") renderAllCharts();
+    }
+
+    async function loadUser() {
+      const me = await api("/api/me");
+      userMeta = me;
+      return me;
+    }
+
+    async function markOnboardingDoneServer() {
+      try {
+        await api("/api/onboarding/done", { method: "POST" });
+      } catch (err) {
+        console.warn("onboarding done mark failed", err.status);
+      }
+    }
+
+    async function routeAfterAuth() {
+      const me = await loadUser();
+      const pending = localStorage.getItem("onboardingPending") === "1";
+      if (!me.onboarding_done && pending) {
+        showOnboarding();
+        return;
+      }
+      await showApp();
+    }
+
+    document.getElementById("loginForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      try {
+        await api("/api/auth/login", {
+          method: "POST",
+          body: JSON.stringify({
+            email: form.get("email"),
+            password: form.get("password"),
+          }),
+        });
+        authStatus.textContent = "Prihlásenie OK.";
+        routeAfterAuth();
+      } catch (err) {
+        authStatus.textContent = "Prihlásenie zlyhalo.";
+      }
+    };
+
+    document.getElementById("registerForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      try {
+        await api("/api/auth/register", {
+          method: "POST",
+          body: JSON.stringify({
+            email: form.get("email"),
+            password: form.get("password"),
+          }),
+        });
+        authStatus.textContent = "Účet vytvorený a prihlásený.";
+        localStorage.setItem("onboardingPending", "1");
+        routeAfterAuth();
+      } catch (err) {
+        authStatus.textContent = "Registrácia zlyhala.";
+      }
+    };
+
+    document.getElementById("logoutBtn").onclick = async () => {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      app.style.display = "none";
+      onboardingSection.style.display = "none";
+      authSection.style.display = "block";
+      userInfo.style.display = "none";
+      localStorage.setItem("onboardingPending", "0");
+    };
+
+    document.getElementById("dailyForm").onsubmit = async (e) => {
+      e.preventDefault();
+      if (dailyLocked) {
+        saveStatus.textContent = "Záznam na dnes už existuje. Skús zajtra.";
+        return;
+      }
+      const form = new FormData(e.target);
+      const toMinutes = (val) => {
+        const num = Number(val);
+        return Number.isFinite(num) ? Math.round(num * 60) : 0;
+      };
+      const weeklyVal = isMonday() ? form.get("weekAvgMobileMinutes") : null;
+      const payload = {
+        weekAvgMobileMinutes: weeklyVal != null && weeklyVal !== "" ? toMinutes(weeklyVal) : 0,
+        sleepHours: form.get("sleepHours"),
+        mood: form.get("mood"),
+        wakeFeeling: form.get("wakeFeeling"),
+        mobileMinutes: toMinutes(form.get("mobileHours")),
+        notes: form.get("notes") || "",
+      };
+      try {
+        const res = await api("/api/daily", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        saveStatus.textContent = "Uložené. Streak: " + res.streak.current;
+        await refreshData();
+      } catch (err) {
+        if (err && err.status === 429) {
+          saveStatus.textContent = "Záznam na dnešný deň už existuje. Skús zajtra.";
+          dailyLocked = true;
+          toggleDailyForm(false);
+        } else {
+          saveStatus.textContent = "Chyba pri ukladaní.";
+        }
+      }
+    };
+
+    document.getElementById("goalsForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const dailyGoal = Number(form.get("dailyGoalHours"));
+      const weeklyGoal = Number(form.get("weeklyGoalHours"));
+      const dailyVal = Number.isFinite(dailyGoal) ? Math.round(dailyGoal * 60) : null;
+      const weeklyVal = Number.isFinite(weeklyGoal) ? Math.round(weeklyGoal * 60) : null;
+      try {
+        await api("/api/goals", {
+          method: "POST",
+          body: JSON.stringify({ dailyGoalMinutes: dailyVal, weeklyGoalMinutes: weeklyVal }),
+        });
+        goalMsg.textContent = "Ciele uložené.";
+        goals.daily = dailyVal;
+        goals.weekly = weeklyVal;
+        updateGoalStatus();
+      } catch {
+        goalMsg.textContent = "Ciele sa nepodarilo uložiť.";
+      }
+    };
+
+    document.getElementById("onboardingForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const inputs = ["weekAvgMobileHours", "sleepHours", "mood", "wakeFeeling", "mobileHours"];
+      inputs.forEach((name) => {
+        const el = e.target.querySelector(`[name=${name}]`);
+        if (el) el.classList.remove("error");
+      });
+      const missing = inputs.filter((name) => {
+        const val = form.get(name);
+        return val === null || val === "" || isNaN(Number(val));
+      });
+      const rangeInvalid = [];
+      const moodVal = Number(form.get("mood"));
+      const wakeVal = Number(form.get("wakeFeeling"));
+      if (!(moodVal >= 1 && moodVal <= 10)) rangeInvalid.push("mood");
+      if (!(wakeVal >= 1 && wakeVal <= 10)) rangeInvalid.push("wakeFeeling");
+      if (missing.length || rangeInvalid.length) {
+        [...missing, ...rangeInvalid].forEach((name) => {
+          const el = e.target.querySelector(`[name=${name}]`);
+          if (el) el.classList.add("error");
+        });
+        onboardingStatus.textContent = "Vyplň prosím všetky polia (mood a zobudenie 1-10).";
+        return;
+      }
+      const toMinutes = (val) => {
+        const num = Number(val);
+        return Number.isFinite(num) ? Math.round(num * 60) : 0;
+      };
+      const payload = {
+        weekAvgMobileMinutes: toMinutes(form.get("weekAvgMobileHours")),
+        sleepHours: form.get("sleepHours"),
+        mood: form.get("mood"),
+        wakeFeeling: form.get("wakeFeeling"),
+        mobileMinutes: toMinutes(form.get("mobileHours")),
+      };
+      try {
+        await api("/api/daily", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        onboardingStatus.textContent = "Uložené, presúvam na hlavnú stránku.";
+        userMeta.onboarding_done = 1;
+        localStorage.setItem("onboardingPending", "0");
+        await markOnboardingDoneServer();
+        showTips();
+        await showApp();
+      } catch (err) {
+        onboardingStatus.textContent = "Chyba pri ukladaní.";
+      }
+    };
+
+    async function showApp() {
+      authSection.style.display = "none";
+      onboardingSection.style.display = "none";
+      app.style.display = "block";
+      userInfo.style.display = "flex";
+      switchView("home");
+      toggleWeeklyQuestion();
+      await refreshData();
+    }
+
+    function showOnboarding() {
+      authSection.style.display = "none";
+      app.style.display = "none";
+      userInfo.style.display = "flex";
+      onboardingSection.style.display = "block";
+      localStorage.setItem("onboardingPending", "1");
+    }
+
+    async function refreshData() {
+      loadSlogan();
+      await Promise.all([loadStreak(), loadEntries(), loadGoals()]);
+    }
+
+    const toHours = (val) => {
+      const num = Number(val);
+      if (!Number.isFinite(num)) return 0;
+      return Math.round((num / 60) * 10) / 10;
+    };
+
+    const todayStr = () => {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    };
+
+    const isMonday = () => new Date().getDay() === 1;
+
+    async function loadEntries() {
+      try {
+        const data = await api("/api/daily");
+        entriesCache = (data || [])
+          .map((d) => ({
+            date: d.date,
+            minutes: Number(d.mobile_minutes ?? d.mobileMinutes ?? 0),
+            mood: d.mood != null ? Number(d.mood) : null,
+            sleep: d.sleep_hours != null ? Number(d.sleep_hours) : d.sleepHours != null ? Number(d.sleepHours) : null,
+            wake: d.wake_feeling != null ? Number(d.wake_feeling) : d.wakeFeeling != null ? Number(d.wakeFeeling) : null,
+            weekAvg: d.week_avg_mobile_minutes != null ? Number(d.week_avg_mobile_minutes) : d.weekAvgMobileMinutes != null ? Number(d.weekAvgMobileMinutes) : 0,
+            notes: d.notes || "",
+          }))
+          .filter((d) => d.date);
+        entriesCache.sort((a, b) => (a.date > b.date ? 1 : -1));
+      } catch (err) {
+        console.warn("entries", err.status);
+      }
+    }
+
+    async function loadGoals() {
+      try {
+        const data = await api("/api/goals");
+        goals = data || { daily: null, weekly: null };
+        const form = document.getElementById("goalsForm");
+        if (goals.daily != null) form.dailyGoalHours.value = toHours(goals.daily);
+        if (goals.weekly != null) form.weeklyGoalHours.value = toHours(goals.weekly);
+        updateGoalStatus();
+      } catch (err) {
+        console.warn("goals", err.status);
+      }
+    }
+
+    async function loadStreak() {
+      try {
+        const s = await api("/api/streak");
+        streakPill.textContent = `🔥 ${s.current || 0} dní`;
+        streakText.textContent = `${s.current || 0} dní (max ${s.longest || 0})`;
+        lastEntry.textContent = "Posledný zápis: " + (s.lastEntryDate || "-");
+        const locked = s.lastEntryDate === todayStr();
+        dailyLocked = locked;
+        toggleDailyForm(!locked);
+        toggleWeeklyQuestion();
+      } catch (err) {
+        streakText.textContent = "Streak nedostupný";
+      }
+    }
+
+    function toggleDailyForm(enabled) {
+      const form = document.getElementById("dailyForm");
+      const inputs = form.querySelectorAll("input, button, textarea");
+      inputs.forEach((el) => (el.disabled = !enabled));
+      if (!enabled) {
+        saveStatus.textContent = "Záznam na dnes je hotový, môžeš pridať až o 24 hodín.";
+        dailyCard.classList.add("locked-card");
+        dailyBadge.style.display = "inline-block";
+      } else {
+        saveStatus.textContent = "";
+        dailyCard.classList.remove("locked-card");
+        dailyBadge.style.display = "none";
+      }
+    }
+
+    function toggleWeeklyQuestion() {
+      if (isMonday()) {
+        weeklyBlock.style.display = "block";
+      } else {
+        weeklyBlock.style.display = "none";
+        const weeklyInput = weeklyBlock.querySelector("input[name=weekAvgMobileMinutes]");
+        if (weeklyInput) weeklyInput.value = "";
+      }
+    }
+
+    function renderAllCharts() {
+      renderChart("daily", entriesCache.map((e) => e.date), entriesCache.map((e) => toHours(e.minutes)), "Hodiny na mobile", "#5ca593", 1);
+
+      const weeklyMap = {};
+      entriesCache.forEach((e) => {
+        const [y, m, d] = e.date.split("-").map(Number);
+        const dateObj = new Date(y, m - 1, d);
+        const week = getWeekStartLabel(dateObj);
+        const val = e.weekAvg > 0 ? toHours(e.weekAvg) : null;
+        if (val != null) {
+          weeklyMap[week] = val;
+        }
+      });
+      const weeklyLabels = Object.keys(weeklyMap).sort();
+      const weeklyValues = weeklyLabels.map((k) => weeklyMap[k]);
+      renderChart("weekly", weeklyLabels, weeklyValues, "Priemerné hodiny na mobile (týždeň)", "#7fb7f0", 1);
+
+      renderChart("mood", entriesCache.map((e) => e.date), entriesCache.map((e) => e.mood ?? null), "Denná nálada", "#f59e0b", 1);
+      renderChart("sleep", entriesCache.map((e) => e.date), entriesCache.map((e) => (e.sleep != null ? Number(e.sleep) : null)), "Hodiny spánku", "#6fb5a6", 1);
+      renderChart("wake", entriesCache.map((e) => e.date), entriesCache.map((e) => e.wake ?? null), "Nálada po zobudení", "#6366f1", 1);
+    }
+
+    function getWeekStartLabel(date) {
+      const local = new Date(date);
+      const day = local.getDay();
+      const diff = (day + 6) % 7;
+      local.setDate(local.getDate() - diff);
+      const y = local.getFullYear();
+      const m = String(local.getMonth() + 1).padStart(2, "0");
+      const d = String(local.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function renderChart(key, labels, data, label, color, minPoints) {
+      const el = chartCanvases[key];
+      const empty = chartEmptyElems[key];
+      if (!el || !empty) return;
+
+      const points = labels
+        .map((l, i) => ({ label: l, value: data[i] }))
+        .filter((p) => p.value !== null && !Number.isNaN(p.value));
+
+      if (points.length < (minPoints || 1)) {
+        el.innerHTML = "";
+        el.style.display = "none";
+        empty.style.display = "block";
+        return;
+      }
+
+      el.style.display = "block";
+      empty.style.display = points.length < (minPoints || 1) ? "block" : "none";
+
+      const width = Math.max(320, points.length * 70);
+      const height = 220;
+      const padX = 32;
+      const padY = 28;
+      const maxVal = Math.max(...points.map((p) => p.value), 1);
+
+      const scaleX = (i) => padX + (i / Math.max(points.length - 1, 1)) * (width - padX * 2);
+      const scaleY = (v) => height - padY - (v / maxVal) * (height - padY * 2);
+
+      const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${scaleX(i).toFixed(1)} ${scaleY(p.value).toFixed(1)}`).join(" ");
+      const areaPath = `M ${scaleX(0).toFixed(1)} ${height - padY} ` + linePath.replace(/^M/, "L") + ` L ${scaleX(points.length - 1).toFixed(1)} ${height - padY} Z`;
+
+      const yTicks = 4;
+      const yLines = Array.from({ length: yTicks + 1 }, (_, i) => {
+        const v = (maxVal / yTicks) * i;
+        return { y: scaleY(v), label: v.toFixed(0) };
+      });
+
+      const xLabels = points.length <= 6 ? points : points.filter((_, i) => i % Math.ceil(points.length / 6) === 0);
+
+      el.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">
+          <g fill="none" stroke="rgba(15,23,42,0.07)" stroke-width="1">
+            ${yLines.map((l) => `<line x1="${padX}" y1="${l.y.toFixed(1)}" x2="${width - padX}" y2="${l.y.toFixed(1)}"></line>`).join("")}
+          </g>
+          <path d="${areaPath}" class="chart-area" fill="${color}"></path>
+          <path d="${linePath}" class="chart-line" stroke="${color}"></path>
+          ${points.map((p, i) => `<circle cx="${scaleX(i).toFixed(1)}" cy="${scaleY(p.value).toFixed(1)}" r="4" fill="#fff" stroke="${color}" stroke-width="2"></circle>`).join("")}
+          ${yLines.map((l) => `<text x="${padX - 8}" y="${l.y.toFixed(1)}" text-anchor="end" alignment-baseline="middle" class="chart-label">${l.label}</text>`).join("")}
+          ${xLabels.map((p) => { const idx = points.findIndex((pt) => pt.label === p.label); return `<text x="${scaleX(idx).toFixed(1)}" y="${height - padY + 16}" text-anchor="middle" class="chart-label">${p.label}</text>`; }).join("")}
+        </svg>
+      `;
+    }
+
+    const localSlogans = [
+      "Malé kroky, veľká zmena.",
+      "Odlož mobil, nadýchni sa.",
+      "Menej scrollu, viac pokoja.",
+      "Zapisuj, uč sa, uvoľni sa.",
+      "Offline je tiež superpower.",
+      "Čas je tvoj, nie feedu.",
+      "Najlepšia notifikácia je ticho.",
+      "Pokojnejšia myseľ, lepší spánok.",
+      "Každý zápis je jedna výhra.",
+      "Stíš obrazovku, zosilni život.",
+      "Odpojenie je nový reset.",
+      "Zdravý rytmus, menej chaosu.",
+      "Dýchaj, nie scrolluj.",
+      "Menšia obrazovka, väčšia prítomnosť.",
+      "Dnes stačí trochu menej displeja.",
+      "Buď tu a teraz, nie v feede.",
+    ];
+    let lastSlogan = "";
+
+    function pickLocalSlogan(prev) {
+      const avoid = prev || lastSlogan;
+      const choices = localSlogans.filter((s) => s !== avoid);
+      const chosen = choices[Math.floor(Math.random() * choices.length)] || localSlogans[0];
+      lastSlogan = chosen;
+      return chosen;
+    }
+
+    function loadSlogan() {
+      const prev = localStorage.getItem("lastSlogan") || "";
+      const next = pickLocalSlogan(prev);
+      heroTitle.textContent = next;
+      localStorage.setItem("lastSlogan", next);
+    }
+
+    function updateGoalStatus() {
+      if (!goals.daily && !goals.weekly) {
+        goalStatus.textContent = "Ciele nenastavené.";
+        return;
+      }
+      const latest = entriesCache[entriesCache.length - 1];
+      const dailyInfo = goals.daily ? `Denný cieľ: ${toHours(goals.daily)} h` : "";
+      const weeklyInfo = goals.weekly ? `Týždenný cieľ: ${toHours(goals.weekly)} h` : "";
+      goalStatus.textContent = [dailyInfo, weeklyInfo].filter(Boolean).join(" · ");
+      if (latest && goals.daily) {
+        const remaining = toHours(goals.daily - (latest.minutes || 0));
+        if (remaining >= 0) goalStatus.textContent += ` · Ostáva dnes: ${remaining} h`;
+        else goalStatus.textContent += ` · Prekročené o ${Math.abs(remaining)} h`;
+      }
+    }
+
+    function showTips() {
+      const seen = localStorage.getItem("tipsSeen") === "1";
+      tipsBlock.style.display = seen ? "none" : "block";
+    }
+
+    async function checkAuth() {
+      try {
+        await routeAfterAuth();
+      } catch {
+        authSection.style.display = "block";
+      }
+    }
+
+    (function initTheme() {
+      const saved = localStorage.getItem("theme");
+      if (saved === "dark") document.body.classList.add("dark");
+    })();
+
+    checkAuth();
+    loadSlogan();
+    showTips();
+  </script>
+</body>
+</html>
