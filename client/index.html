@@ -40,17 +40,16 @@
       min-height: 100vh;
     }
     header {
-      padding: 20px 28px;
+      padding: 14px 20px;
       display: grid;
       grid-template-columns: auto 1fr auto;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
-      position: sticky;
-      top: 0;
-      background: linear-gradient(90deg, rgba(245,247,251,0.9), rgba(238,242,247,0.9));
-      backdrop-filter: blur(10px);
+      position: static;
+      background: linear-gradient(90deg, rgba(245,247,251,0.92), rgba(238,242,247,0.92));
       border-bottom: 1px solid var(--border);
     }
+    header.header-hidden { display: none; }
     .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: 0.1px; color: var(--text); }
     .brand-name { font-size: 18px; background: linear-gradient(120deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; color: transparent; }
     .logo { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: grid; place-items: center; box-shadow: 0 10px 30px rgba(111,181,166,0.25); }
@@ -92,14 +91,15 @@
     .chart-empty { display: none; text-align: center; color: var(--muted); padding: 24px 0; font-weight: 600; letter-spacing: 0.1px; }
     .streak-badge { font-size: 18px; font-weight: 700; }
     @media (max-width: 720px) {
-      header { grid-template-columns: 1fr; gap: 10px; }
-      nav { justify-content: stretch; flex-wrap: wrap; }
-      .nav-btn { flex: 1 1 100%; text-align: center; }
-      .container { padding: 16px 14px 48px; }
+      header { grid-template-columns: 1fr; gap: 8px; padding: 8px 12px; }
+      nav { justify-content: stretch; flex-wrap: wrap; padding: 4px; gap: 6px; }
+      .nav-btn { flex: 1 1 100%; text-align: center; padding: 9px 12px; }
+      .logo { width: 32px; height: 32px; }
+      .container { padding: 16px 14px 32px; }
       .card { padding: 14px; }
       .hero { padding: 12px; }
       h1 { font-size: 22px; line-height: 1.2; }
-      label, input, button { font-size: 15px; }
+      label, input, button, textarea { font-size: 15px; }
     }
   </style>
 </head>
@@ -157,8 +157,8 @@
       <h3>Rýchly úvodný dotazník</h3>
       <p class="muted">Zodpovedz tieto otázky pri prvej návšteve. Po uložení sa dostaneš na domovskú stránku.</p>
       <form id="onboardingForm">
-        <label>Priemerný čas na mobile minulý týždeň (hodiny)</label>
-        <input type="number" step="0.1" name="weekAvgMobileHours" min="0" placeholder="napr. 3" />
+        <label>Celkový čas na mobile minulý týždeň (hodiny)</label>
+        <input type="number" step="0.1" name="weekAvgMobileHours" min="0" placeholder="30" />
         <label>Koľko si spal dnes (hodiny)</label>
         <input type="number" step="0.1" name="sleepHours" min="0" max="24" placeholder="7.5" />
         <label>Nálada počas dňa (1-10)</label>
@@ -192,8 +192,8 @@
             <p class="muted">Zadaj čísla, ulož a sleduj streak.</p>
             <form id="dailyForm">
               <div id="weeklyBlock">
-                <label>Priemerný čas na mobile minulý týždeň (hodiny)</label>
-                <input type="number" step="0.1" name="weekAvgMobileMinutes" min="0" placeholder="napr. 3" />
+                <label>Celkový čas na mobile minulý týždeň (hodiny)</label>
+                <input type="number" step="0.1" name="weekAvgMobileMinutes" min="0" placeholder="30" />
               </div>
               <label>Koľko si spal dnes (hodiny)</label>
               <input type="number" step="0.1" name="sleepHours" min="0" max="24" placeholder="7.5" />
@@ -337,10 +337,11 @@
     const weeklyBlock = document.getElementById("weeklyBlock");
     const goalStatus = document.getElementById("goalStatus");
     const goalMsg = document.getElementById("goalMsg");
-    const themeToggle = document.getElementById("themeToggle");
-    const heroTitle = document.getElementById("heroTitle");
-    const tipsBlock = document.getElementById("onboardingTips");
+  const themeToggle = document.getElementById("themeToggle");
+  const heroTitle = document.getElementById("heroTitle");
+  const tipsBlock = document.getElementById("onboardingTips");
     const tipsDone = document.getElementById("tipsDone");
+    let lastScrollY = 0;
 
     let userMeta = {};
     let dailyLocked = false;
@@ -369,6 +370,7 @@
       tipsBlock.style.display = "none";
       localStorage.setItem("tipsSeen", "1");
     };
+
 
     function switchView(view) {
       homeView.style.display = view === "home" ? "block" : "none";
@@ -826,6 +828,15 @@
     (function initTheme() {
       const saved = localStorage.getItem("theme");
       if (saved === "dark") document.body.classList.add("dark");
+    })();
+
+    (function hideHeaderOnScroll() {
+      const headerEl = document.querySelector("header");
+      if (!headerEl) return;
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 40) headerEl.classList.add("header-hidden");
+        else headerEl.classList.remove("header-hidden");
+      }, { passive: true });
     })();
 
     checkAuth();
