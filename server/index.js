@@ -5,13 +5,16 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Database = require("better-sqlite3");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || "please-change-me";
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
 
-const db = new Database(path.join(__dirname, "data.db"));
+const dbPath = process.env.DB_PATH || path.join(__dirname, "data.db");
+fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
 
 db.prepare(`
@@ -45,16 +48,6 @@ try {
   // ignore
 }
 
-// If users already have entries, mark onboarding as done to avoid re-showing
-db.prepare(`
-  UPDATE users
-  SET onboarding_done = 1
-  WHERE onboarding_done = 0
-    AND EXISTS (
-      SELECT 1 FROM daily_entries de WHERE de.user_id = users.id
-    )
-`).run();
-
 db.prepare(`
   CREATE TABLE IF NOT EXISTS daily_entries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,6 +69,16 @@ try {
 } catch (err) {
   // ignore
 }
+
+// If users already have entries, mark onboarding as done to avoid re-showing
+db.prepare(`
+  UPDATE users
+  SET onboarding_done = 1
+  WHERE onboarding_done = 0
+    AND EXISTS (
+      SELECT 1 FROM daily_entries de WHERE de.user_id = users.id
+    )
+`).run();
 
 app.use(
   cors({
