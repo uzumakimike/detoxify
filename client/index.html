@@ -406,13 +406,19 @@
     }
 
     async function routeAfterAuth() {
-      const me = await loadUser();
-      const pending = localStorage.getItem("onboardingPending") === "1";
-      if (!me.onboarding_done && pending) {
-        showOnboarding();
-        return;
+      try {
+        const me = await loadUser();
+        const pending = localStorage.getItem("onboardingPending") === "1";
+        if (!me.onboarding_done && pending) {
+          showOnboarding();
+          return;
+        }
+        await showApp();
+      } catch (err) {
+        authStatus.textContent = "Overenie účtu zlyhalo, skús refresh alebo prihlásenie znova.";
+        authSection.style.display = "block";
+        app.style.display = "none";
       }
-      await showApp();
     }
 
     document.getElementById("loginForm").onsubmit = async (e) => {
@@ -427,9 +433,10 @@
           }),
         });
         authStatus.textContent = "Prihlásenie OK.";
-        routeAfterAuth();
+        localStorage.setItem("onboardingPending", localStorage.getItem("onboardingPending") || "0");
+        await routeAfterAuth();
       } catch (err) {
-        authStatus.textContent = "Prihlásenie zlyhalo.";
+        authStatus.textContent = "Prihlásenie zlyhalo. Skús overiť údaje alebo obnov stránku.";
       }
     };
 
