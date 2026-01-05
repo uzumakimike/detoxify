@@ -472,7 +472,7 @@
         const num = Number(val);
         return Number.isFinite(num) ? Math.round(num * 60) : 0;
       };
-      const weeklyVal = isMonday() ? form.get("weekAvgMobileMinutes") : null;
+      const weeklyVal = shouldAskWeekly() ? form.get("weekAvgMobileMinutes") : null;
       const payload = {
         weekAvgMobileMinutes: weeklyVal != null && weeklyVal !== "" ? toMinutes(weeklyVal) : 0,
         sleepHours: form.get("sleepHours"),
@@ -609,7 +609,18 @@
       return `${y}-${m}-${d}`;
     };
 
-    const isMonday = () => new Date().getDay() === 1;
+    const daysBetweenLocal = (a, b) => {
+      const [ya, ma, da] = a.split("-").map(Number);
+      const [yb, mb, db] = b.split("-").map(Number);
+      const daj = new Date(ya, ma - 1, da);
+      const dbj = new Date(yb, mb - 1, db);
+      return Math.floor((dbj - daj) / (1000 * 60 * 60 * 24));
+    };
+    const shouldAskWeekly = () => {
+      if (!userMeta.createdAt) return false;
+      const diff = daysBetweenLocal(userMeta.createdAt.slice(0, 10), todayStr());
+      return diff % 7 === 0;
+    };
 
     async function loadEntries() {
       try {
@@ -675,7 +686,7 @@
     }
 
     function toggleWeeklyQuestion() {
-      if (isMonday()) {
+      if (shouldAskWeekly()) {
         weeklyBlock.style.display = "block";
       } else {
         weeklyBlock.style.display = "none";

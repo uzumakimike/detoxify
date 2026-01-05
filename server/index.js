@@ -27,7 +27,8 @@ db.prepare(`
     last_entry_date TEXT,
     onboarding_done INTEGER DEFAULT 0,
     daily_goal_minutes INTEGER,
-    weekly_goal_minutes INTEGER
+    weekly_goal_minutes INTEGER,
+    created_at TEXT DEFAULT (datetime('now'))
   )
 `).run();
 
@@ -44,6 +45,11 @@ try {
 }
 try {
   db.prepare("ALTER TABLE users ADD COLUMN weekly_goal_minutes INTEGER").run();
+} catch (err) {
+  // ignore
+}
+try {
+  db.prepare("ALTER TABLE users ADD COLUMN created_at TEXT DEFAULT (datetime('now'))").run();
 } catch (err) {
   // ignore
 }
@@ -123,8 +129,8 @@ app.post("/api/auth/register", async (req, res) => {
   try {
     const hash = await bcrypt.hash(password, 12);
     const insert = db.prepare(`
-      INSERT INTO users (email, password_hash, current_streak, longest_streak, onboarding_done)
-      VALUES (?, ?, 0, 0, 0)
+      INSERT INTO users (email, password_hash, current_streak, longest_streak, onboarding_done, created_at)
+      VALUES (?, ?, 0, 0, 0, datetime('now'))
     `);
     const result = insert.run(email.toLowerCase(), hash);
     const token = createToken(result.lastInsertRowid);
@@ -173,7 +179,7 @@ app.post("/api/auth/logout", (req, res) => {
 
 app.get("/api/me", authRequired, (req, res) => {
   const user = db
-    .prepare("SELECT email, onboarding_done FROM users WHERE id = ?")
+    .prepare("SELECT email, onboarding_done, created_at as createdAt FROM users WHERE id = ?")
     .get(req.userId);
   res.json(user);
 });
